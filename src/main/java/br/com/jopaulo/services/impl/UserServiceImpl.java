@@ -11,6 +11,7 @@ import br.com.jopaulo.domain.User;
 import br.com.jopaulo.domain.dto.UserDTO;
 import br.com.jopaulo.repositories.UserRepository;
 import br.com.jopaulo.services.UserService;
+import br.com.jopaulo.services.exceptions.DataIntegrationViolationException;
 import br.com.jopaulo.services.exceptions.ObjectNotFoundException;
 
 @Service
@@ -34,6 +35,14 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public User create(UserDTO obj) {
+		findByEmail(obj);
 		return repository.save(mapper.map(obj, User.class));
+	}
+	
+	private void findByEmail(UserDTO obj) {
+		Optional<User> user = repository.findByEmail(obj.getEmail());
+		if (user.isPresent()) {
+			throw new DataIntegrationViolationException("E-mail já cadastrado no sistema");
+		}
 	}
 }

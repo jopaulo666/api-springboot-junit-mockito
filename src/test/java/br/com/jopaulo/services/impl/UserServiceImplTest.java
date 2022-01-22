@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import br.com.jopaulo.domain.User;
 import br.com.jopaulo.domain.dto.UserDTO;
 import br.com.jopaulo.repositories.UserRepository;
+import br.com.jopaulo.services.exceptions.ObjectNotFoundException;
 
 @SpringBootTest
 class UserServiceImplTest {
@@ -57,6 +58,18 @@ class UserServiceImplTest {
 		assertEquals(ID, response.getId());
 		assertEquals(NAME, response.getName());
 		assertEquals(EMAIL, response.getEmail());
+	}
+	
+	@Test
+	void whenFindByIdThenReturnAnUserNotFoundException() {
+		Mockito.when(repository.findById(Mockito.anyInt())).thenThrow(new ObjectNotFoundException("Usuário não encontrado"));
+		
+		try {
+			service.findById(ID);
+		} catch (Exception e) {
+			assertEquals(ObjectNotFoundException.class, e.getClass());
+			assertEquals("Usuário não encontrado", e.getMessage());
+		}
 	}
 
 	@Test

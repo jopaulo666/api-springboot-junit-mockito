@@ -3,6 +3,7 @@ package br.com.jopaulo.services.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import br.com.jopaulo.domain.User;
 import br.com.jopaulo.domain.dto.UserDTO;
 import br.com.jopaulo.repositories.UserRepository;
+import br.com.jopaulo.services.exceptions.DataIntegrationViolationException;
 import br.com.jopaulo.services.exceptions.ObjectNotFoundException;
 
 @SpringBootTest
@@ -62,11 +64,11 @@ class UserServiceImplTest {
 		assertEquals(NAME, response.getName());
 		assertEquals(EMAIL, response.getEmail());
 	}
-	
+
 	@Test
 	void whenFindByIdThenReturnAnUserNotFoundException() {
 		Mockito.when(repository.findById(Mockito.anyInt())).thenThrow(new ObjectNotFoundException(MESSAGE));
-		
+
 		try {
 			service.findById(ID);
 		} catch (Exception e) {
@@ -77,14 +79,14 @@ class UserServiceImplTest {
 
 	@Test
 	void whenFindAllThenReturnAnListOfUsers() {
-		Mockito.when(repository.findAll()).thenReturn(List.of(user));
-		
+		when(repository.findAll()).thenReturn(List.of(user));
+
 		List<User> response = service.findAll();
-		
+
 		assertNotNull(response);
 		assertEquals(1, response.size());
 		assertEquals(User.class, response.get(INDEX).getClass());
-		
+
 		assertEquals(ID, response.get(INDEX).getId());
 		assertEquals(NAME, response.get(INDEX).getName());
 		assertEquals(EMAIL, response.get(INDEX).getEmail());
@@ -92,8 +94,30 @@ class UserServiceImplTest {
 	}
 
 	@Test
-	void testCreate() {
-		fail("Not yet implemented");
+	void whenCreateThenReturnSuccess() {
+		when(repository.save(Mockito.any())).thenReturn(user);
+
+		User response = service.create(userDTO);
+
+		assertNotNull(response);
+		assertEquals(User.class, response.getClass());
+		assertEquals(ID, response.getId());
+		assertEquals(NAME, response.getName());
+		assertEquals(EMAIL, response.getEmail());
+		assertEquals(PASSWORD, response.getPassword());
+	}
+
+	@Test
+	void whenCreateThenReturnAnDataIntegrityViolationException() {
+		when(repository.findByEmail(Mockito.any())).thenReturn(optionalUser);
+
+		try {
+			optionalUser.get().setId(2);
+			service.create(userDTO);
+		} catch (Exception e) {
+			assertEquals(DataIntegrationViolationException.class, e.getClass());
+			assertEquals("E-mail já cadastrado no sistema", e.getMessage());
+		}
 	}
 
 	@Test

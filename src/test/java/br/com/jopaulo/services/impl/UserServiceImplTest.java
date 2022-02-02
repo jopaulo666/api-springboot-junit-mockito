@@ -3,6 +3,9 @@ package br.com.jopaulo.services.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -26,6 +29,7 @@ import br.com.jopaulo.services.exceptions.ObjectNotFoundException;
 @SpringBootTest
 class UserServiceImplTest {
 
+	private static final String OBJETO_NAO_ENCONTRADO = "Objeto não encontrado";
 	private static final String E_MAIL_JA_CADASTRADO_NO_SISTEMA = "E-mail já cadastrado no sistema";
 	private static final int INDEX = 0;
 	private static final String MESSAGE = "Usuário não encontrado";
@@ -55,7 +59,7 @@ class UserServiceImplTest {
 
 	@Test
 	void whenFindByIdThenReturnAnUserInstance() {
-		Mockito.when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
+		when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
 
 		User response = service.findById(ID);
 
@@ -68,7 +72,7 @@ class UserServiceImplTest {
 
 	@Test
 	void whenFindByIdThenReturnAnUserNotFoundException() {
-		Mockito.when(repository.findById(Mockito.anyInt())).thenThrow(new ObjectNotFoundException(MESSAGE));
+		when(repository.findById(Mockito.anyInt())).thenThrow(new ObjectNotFoundException(MESSAGE));
 
 		try {
 			service.findById(ID);
@@ -134,7 +138,7 @@ class UserServiceImplTest {
 		assertEquals(EMAIL, response.getEmail());
 		assertEquals(PASSWORD, response.getPassword());
 	}
-	
+
 	@Test
 	void whenUpdateThenReturnAnDataIntegrityViolationException() {
 		when(repository.findByEmail(Mockito.any())).thenReturn(optionalUser);
@@ -149,8 +153,22 @@ class UserServiceImplTest {
 	}
 
 	@Test
-	void testDelete() {
-		fail("Not yet implemented");
+	void deleteWithSuccess() {
+		when(repository.findById(Mockito.anyInt())).thenReturn(optionalUser);
+		doNothing().when(repository).deleteById(Mockito.anyInt());
+		service.delete(ID);
+		verify(repository, times(1)).deleteById(Mockito.anyInt());
+	}
+
+	@Test
+	void deleteWithObjectNotFoundException() {
+		when(repository.findById(Mockito.anyInt())).thenThrow(new ObjectNotFoundException(OBJETO_NAO_ENCONTRADO));
+
+		try {
+			service.delete(ID);
+		} catch (Exception e) {
+			assertEquals(OBJETO_NAO_ENCONTRADO, e.getMessage());
+		}
 	}
 
 	private void startUser() {

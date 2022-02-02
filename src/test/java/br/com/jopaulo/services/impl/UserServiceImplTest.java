@@ -26,6 +26,7 @@ import br.com.jopaulo.services.exceptions.ObjectNotFoundException;
 @SpringBootTest
 class UserServiceImplTest {
 
+	private static final String E_MAIL_JA_CADASTRADO_NO_SISTEMA = "E-mail já cadastrado no sistema";
 	private static final int INDEX = 0;
 	private static final String MESSAGE = "Usuário não encontrado";
 	private static final Integer ID = 1;
@@ -116,13 +117,35 @@ class UserServiceImplTest {
 			service.create(userDTO);
 		} catch (Exception e) {
 			assertEquals(DataIntegrationViolationException.class, e.getClass());
-			assertEquals("E-mail já cadastrado no sistema", e.getMessage());
+			assertEquals(E_MAIL_JA_CADASTRADO_NO_SISTEMA, e.getMessage());
 		}
 	}
 
 	@Test
-	void testUpdate() {
-		fail("Not yet implemented");
+	void whenUpdateThenReturnSuccess() {
+		when(repository.save(Mockito.any())).thenReturn(user);
+
+		User response = service.update(userDTO);
+
+		assertNotNull(response);
+		assertEquals(User.class, response.getClass());
+		assertEquals(ID, response.getId());
+		assertEquals(NAME, response.getName());
+		assertEquals(EMAIL, response.getEmail());
+		assertEquals(PASSWORD, response.getPassword());
+	}
+	
+	@Test
+	void whenUpdateThenReturnAnDataIntegrityViolationException() {
+		when(repository.findByEmail(Mockito.any())).thenReturn(optionalUser);
+
+		try {
+			optionalUser.get().setId(2);
+			service.create(userDTO);
+		} catch (Exception e) {
+			assertEquals(DataIntegrationViolationException.class, e.getClass());
+			assertEquals(E_MAIL_JA_CADASTRADO_NO_SISTEMA, e.getMessage());
+		}
 	}
 
 	@Test

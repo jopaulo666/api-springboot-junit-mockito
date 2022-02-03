@@ -1,6 +1,7 @@
 package br.com.jopaulo.resources;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doNothing;
@@ -29,7 +30,6 @@ import br.com.jopaulo.services.impl.UserServiceImpl;
 class UserResourceTest {
 	
 	private static final int INDEX = 0;
-	private static final String MESSAGE = "Usuário não encontrado";
 	private static final Integer ID = 1;
 	private static final String NAME = "João Paulo";
 	private static final String EMAIL = "jp_cbc@hotmail.com";
